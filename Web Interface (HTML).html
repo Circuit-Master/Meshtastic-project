@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Weather Data</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {packages: ['corechart', 'line']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/data', true);
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            var chartData = [['Time', 'Temperature', 'Pressure', 'Humidity', 'Dew Point']];
+            data.forEach(function(row) {
+              var time = new Date(row.time);
+              chartData.push([
+                time, 
+                parseFloat(row.data.Temp.split(": ")[1]), 
+                parseFloat(row.data.Pressure.split(": ")[1]), 
+                parseFloat(row.data.Humidity.split(": ")[1]), 
+                parseFloat(row.data.DewPoint.split(": ")[1])
+              ]);
+            });
+            var dataTable = google.visualization.arrayToDataTable(chartData);
+            var options = {
+              title: 'Weather Data',
+              curveType: 'function',
+              legend: { position: 'bottom' }
+            };
+            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+            chart.draw(dataTable, options);
+          }
+        };
+        xhr.send();
+      }
+
+      setInterval(drawChart, 60000); // Update chart every minute
+    </script>
+  </head>
+  <body>
+    <div id="curve_chart" style="width: 900px; height: 500px"></div>
+  </body>
+</html>
